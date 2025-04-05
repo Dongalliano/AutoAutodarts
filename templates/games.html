@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autodarts Kontrollfläche</title>
+    <style>
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        max-width: 300px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .grid-button {
+        background-color: #4caf50;
+        border: none;
+        color: white;
+        padding: 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      .grid-button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="inputField">Konsole:</label>
+    <input type="text" id="inputField" name="inputField" />
+    <button onclick="handleClick()">#</button>
+
+    <div class="grid-container" id="button-container"></div>
+
+    <script>
+      const buttonContainer = document.getElementById("button-container");
+      var xhr = new XMLHttpRequest();
+
+      const button = document.createElement("button");
+      button.classList.add("grid-button");
+      button.textContent = "START GAME";
+
+      button.addEventListener("click", function () {
+        let player_count = prompt("How many players are playing?");
+        fetch(`http://{{ address }}:8080/startgame/${player_count}`);
+      });
+
+      function handleClick() {
+        var inputField = document.getElementById("inputField");
+
+        fetch(`http://{{ address }}:8080/command/${inputField.value}`);
+
+        inputField.value = "";
+      }
+
+      buttonContainer.appendChild(button);
+
+      fetch("http://{{ address }}:8080/getgames")
+        .then((response) => response.json())
+        .then((data) => {
+          for (game_mode in data) {
+            for (game in data[game_mode]) {
+              const button = document.createElement("button");
+              button.classList.add("grid-button");
+              button.textContent = game;
+
+              const GAME_MODE = game_mode;
+              const GAME = game;
+
+              button.addEventListener("click", function () {
+                fetch(
+                  `http://{{ address }}:8080/loadgame/${GAME_MODE}/${GAME}`
+                );
+              });
+
+              buttonContainer.appendChild(button);
+            }
+          }
+        });
+    </script>
+  </body>
+</html>
