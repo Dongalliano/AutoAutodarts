@@ -42,4 +42,17 @@ Example for removing a round named cricket1:
 - cricket1
 ```
 
+# Setup
+
+Install **[this](https://www.python.org/downloads/release/python-3132/)** version of python to guarantee it being able to run. And make sure to add **pip** in the Installer.
+When installed run:
+
+```
+pip install -r [The Path to "requirements.txt" in this Projekt]
+```
+
+When no Erros accured create a shortcut to the "start.bat" File located in /src and put it in the windows autostart folder. And make sure to put no windows password.
+
+![Python Version](https://img.shields.io/badge/python-3.13.2-blue.svg)
+
 ![Windows Badge](https://img.shields.io/badge/Windows-Compatible-blue)
