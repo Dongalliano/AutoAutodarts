@@ -114,7 +114,8 @@ def manage_games(cmd):
         game_name = cmd[2]
         settings = cmd[3:]
     except:
-        return
+        if not action and not selected_game:
+            return
 
     if action == "+":
         if selected_game not in GAMES:
@@ -131,7 +132,7 @@ def manage_games(cmd):
                 del games[game_type][selected_game]
                 break
 
-    with open(f"{DATA_PATH}/{GAMES_FILE}", "r+") as games_file:
+    with open(f"{DATA_PATH}/{GAMES_FILE}", "w") as games_file:
         dump(games, games_file)
 
 

@@ -57,30 +57,35 @@
         fetch(`http://{{ address }}:8080/command/${inputField.value}`);
 
         inputField.value = "";
+        loadPresets();
       }
 
-      fetch("http://{{ address }}:8080/getgames")
-        .then((response) => response.json())
-        .then((data) => {
-          for (game_mode in data) {
-            for (game in data[game_mode]) {
-              const button = document.createElement("button");
-              button.classList.add("grid-button");
-              button.textContent = game;
+      function loadPresets() {
+        buttonContainer.innerHTML = "";
+        fetch("http://{{ address }}:8080/getgames")
+          .then((response) => response.json())
+          .then((data) => {
+            for (game_mode in data) {
+              for (game in data[game_mode]) {
+                const button = document.createElement("button");
+                button.classList.add("grid-button");
+                button.textContent = game;
 
-              const GAME_MODE = game_mode;
-              const GAME = game;
+                const GAME_MODE = game_mode;
+                const GAME = game;
 
-              button.addEventListener("click", function () {
-                fetch(
-                  `http://{{ address }}:8080/loadgame/${GAME_MODE}/${GAME}`
-                );
-              });
+                button.addEventListener("click", function () {
+                  fetch(
+                    `http://{{ address }}:8080/loadgame/${GAME_MODE}/${GAME}`
+                  );
+                });
 
-              buttonContainer.appendChild(button);
+                buttonContainer.appendChild(button);
+              }
             }
-          }
-        });
+          });
+      }
+      loadPresets();
     </script>
   </body>
 </html>
