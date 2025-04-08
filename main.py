@@ -182,6 +182,7 @@ def loadgame(game_mode, game_name):
                 By.XPATH, "./*"
             )[current_setting - 1].click()
 
+    # Create Lobby button
     get_html_element(
         driver, "/html/body/div[1]/div/div[2]/div/div/div[3]/button"
     ).click()
@@ -191,13 +192,15 @@ def loadgame(game_mode, game_name):
 
 @FLASK_APP.route("/startgame/<player_count>")
 def startgame(player_count):
+    player_count = player_count.replace(" ", "")
+
     try:
         player_count = int(player_count)
     except:
         return
 
-    if player_count == 0 or player_count == 1:
-        return
+    if player_count == 0:
+        player_count = 1
 
     for i in range(1, player_count):
         player_name = f"Player{i}"
@@ -215,11 +218,20 @@ def startgame(player_count):
         player_name_input.send_keys(player_name)
         add_player_button.click()
 
+    # Click start button
     get_html_element(
         driver,
         "/html/body/div[1]/div/div[2]/div/div[2]/div[2]/div[2]/div[3]/button[1]",
         0.4,
     ).click()
+
+    # Switch view to be able to see the board and hits
+    get_html_element(
+        driver,
+        "/html/body/div[1]/div/div[2]/div/div/div[1]/ul/div[3]/div[2]/button[2]",
+        4,
+    ).click()
+
     return Response(status=200)
 
 
@@ -292,7 +304,7 @@ if __name__ == "__main__":
     qrcode_image = remote_controll.make_image(fill="black", back_color="white")
 
     imshow(qrcode_image)
-    title("QR Code Fenster")
+    title("Remote Controll")
     axis("off")
     show()
 

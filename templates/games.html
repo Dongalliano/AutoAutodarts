@@ -35,20 +35,21 @@
     <input type="text" id="inputField" name="inputField" />
     <button onclick="handleClick()">#</button>
 
+    <div>
+      <button onclick="startGame()" class="grid-button">Start Game</button>
+    </div>
+
     <div class="grid-container" id="button-container"></div>
 
     <script>
       const buttonContainer = document.getElementById("button-container");
+
       var xhr = new XMLHttpRequest();
 
-      const button = document.createElement("button");
-      button.classList.add("grid-button");
-      button.textContent = "START GAME";
-
-      button.addEventListener("click", function () {
+      function startGame() {
         let player_count = prompt("How many players are playing?");
         fetch(`http://{{ address }}:8080/startgame/${player_count}`);
-      });
+      }
 
       function handleClick() {
         var inputField = document.getElementById("inputField");
@@ -57,8 +58,6 @@
 
         inputField.value = "";
       }
-
-      buttonContainer.appendChild(button);
 
       fetch("http://{{ address }}:8080/getgames")
         .then((response) => response.json())
