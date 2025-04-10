@@ -33,10 +33,14 @@
   <body>
     <label for="inputField">Konsole:</label>
     <input type="text" id="inputField" name="inputField" />
-    <button onclick="handleClick()">#</button>
+    <button onclick="sendCommand()">#</button>
 
     <div>
       <button onclick="startGame()" class="grid-button">Start Game</button>
+    </div>
+
+    <div>
+      <button onclick="nextGame()" class="grid-button">Next Game</button>
     </div>
 
     <div class="grid-container" id="button-container"></div>
@@ -51,7 +55,11 @@
         fetch(`http://{{ address }}:8080/startgame/${player_count}`);
       }
 
-      function handleClick() {
+      function nextGame() {
+        fetch(`http://{{ address }}:8080/nextgame`);
+      }
+
+      function sendCommand() {
         var inputField = document.getElementById("inputField");
 
         fetch(`http://{{ address }}:8080/command/${inputField.value}`);

@@ -175,6 +175,9 @@ def loadgame(game_mode, game_name):
         ordered_settings.append(setting)
 
     game_settings = games[game_mode][game_name]
+    
+    for x in range(len(ordered_settings) - len(game_settings)):
+        game_settings.append(0)
 
     for i in range(0, len(ordered_settings)):
         current_setting = int(game_settings[i])
@@ -235,6 +238,10 @@ def startgame(player_count):
 
     return Response(status=200)
 
+@FLASK_APP.route("/nextgame")
+def nextgame():
+    get_html_element(driver, "/html/body/div[1]/div/div[2]/div/div/div[5]/div/div/div[2]/button[3]", 0.4).click()
+    return Response(status=200)
 
 def run_flask():
     FLASK_APP.run(host="0.0.0.0", port=8080)
