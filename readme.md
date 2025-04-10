@@ -4,6 +4,9 @@ A simple Solution for an automated slot like dart machine. It is recommended to 
 
 It will start itself at the point the device is running and provide a locally hosted website acting like a remote control. The Point of this programm is to make it possible to create rounds with 1 click without having to move around to make you gaming experience a bit cleaner.
 
+# Info
+This projekt is only in "Early Access" if you wanna call it that and doesnt even have tested Linux support, **yet**. And the code is also in need of a big refactored.
+
 # Commands
 
 ```
@@ -14,7 +17,7 @@ It will start itself at the point the device is running and provide a locally ho
 [gamename] To add remove named presets.
 ```
 
-| Left                           |
+| **Gamemodes**                           |
 | :----------------------------- |
 | x01                            |
 | cricket                        |
@@ -56,3 +59,7 @@ When no Erros accured create a shortcut to the "start.bat" File located in /src 
 ![Python Version](https://img.shields.io/badge/python-3.13.2-blue.svg)
 
 ![Windows Badge](https://img.shields.io/badge/Windows-Compatible-blue)
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)

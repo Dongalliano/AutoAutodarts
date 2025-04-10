@@ -27,6 +27,7 @@ GAMES_FILE = "games.json"
 KEY_PATH = f"{getenv("APPDATA")}/D4RT2"
 KEY_FILE = "key.txt"
 
+# Referenzed games with their button because the url containts "-"'s
 GAMES = {
     "x01": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[1]/div/div/a",
     "cricket": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[1]/div/a",
@@ -35,7 +36,7 @@ GAMES = {
     "gotcha": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[2]/div/a[3]",
     "around": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[1]",
     "round": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[2]",
-    "random checkout": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[3]",
+    "random": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[3]",
     "count": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[4]",
     "segment": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[5]",
     "bobs": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[6]",
@@ -114,6 +115,7 @@ def manage_games(cmd):
         game_name = cmd[2]
         settings = cmd[3:]
     except:
+        # If you are removing an preset @game_name is actually @selected_game
         if not action and not selected_game:
             return
 
@@ -175,7 +177,7 @@ def loadgame(game_mode, game_name):
         ordered_settings.append(setting)
 
     game_settings = games[game_mode][game_name]
-    
+
     for x in range(len(ordered_settings) - len(game_settings)):
         game_settings.append(0)
 
@@ -238,10 +240,16 @@ def startgame(player_count):
 
     return Response(status=200)
 
+
 @FLASK_APP.route("/nextgame")
 def nextgame():
-    get_html_element(driver, "/html/body/div[1]/div/div[2]/div/div/div[5]/div/div/div[2]/button[3]", 0.4).click()
+    get_html_element(
+        driver,
+        "/html/body/div[1]/div/div[2]/div/div/div[5]/div/div/div[2]/button[3]",
+        0.4,
+    ).click()
     return Response(status=200)
+
 
 def run_flask():
     FLASK_APP.run(host="0.0.0.0", port=8080)
