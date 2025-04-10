@@ -261,7 +261,7 @@ if __name__ == "__main__":
     makedirs(DATA_PATH, exist_ok=True)
     makedirs(KEY_PATH, exist_ok=True)
 
-    if not path.exists(f"{DATA_PATH}/{DATA_FILE}"):
+    if not path.exists(f"{KEY_PATH}/{KEY_FILE}"):
         key = Fernet.generate_key().decode()
 
         with open(f"{KEY_PATH}/{KEY_FILE}", "w") as key_data:
