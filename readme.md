@@ -4,9 +4,6 @@ A simple Solution for an automated slot like dart machine. It is recommended to 
 
 It will start itself at the point the device is running and provide a locally hosted website acting like a remote control. The Point of this programm is to make it possible to create rounds with 1 click without having to move around to make you gaming experience a bit cleaner.
 
-# Info
-This projekt is only in "Early Access" if you wanna call it that and doesnt even have tested Linux support, **yet**. And the code is also in need of a big refactored.
-
 # Commands
 
 ```
@@ -17,7 +14,7 @@ This projekt is only in "Early Access" if you wanna call it that and doesnt even
 [gamename] To add remove named presets.
 ```
 
-| **Gamemodes**                           |
+| **Gamemodes**                  |
 | :----------------------------- |
 | x01                            |
 | cricket                        |

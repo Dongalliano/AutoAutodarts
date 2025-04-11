@@ -1,5 +1,6 @@
 from json import dump, dumps, load, loads
 from os import getenv, makedirs, path
+from platform import system
 from socket import gethostbyname, gethostname
 from sys import exit as sys_exit
 from threading import Thread
@@ -14,18 +15,28 @@ from qrcode import QRCode, constants
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-FLASK_APP = Flask(__name__)
+FLASK_APP = Flask(__name__, static_folder="./templates")
 CORS(FLASK_APP)
+
+system_os = system()
+
+if system_os == "Windows":
+    DATA_PATH = path.join(getenv("TEMP"), "autoautodarts")
+    KEY_PATH = path.join(getenv("APPDATA"), "D4RT2")
+elif system_os == "Linux":
+    DATA_PATH = path.join(getenv("XDG_RUNTIME_DIR", "/tmp"), "autoautodarts")
+    KEY_PATH = path.join(
+        getenv("XDG_CONFIG_HOME", path.expanduser("~/.config")), "D4RT2"
+    )
+else:
+    sys_exit()
+
+DATA_FILE = "data.txt"
+GAMES_FILE = "games.json"
+KEY_FILE = "key.txt"
 
 AUTODARTS_SITE = "https://play.autodarts.io/"
 AUTODARTS_LOGIN_SITE = "https://login.autodarts.io/"
-
-DATA_PATH = f"{getenv("TEMP")}/autoautodarts"
-DATA_FILE = "data.txt"
-GAMES_FILE = "games.json"
-
-KEY_PATH = f"{getenv("APPDATA")}/D4RT2"
-KEY_FILE = "key.txt"
 
 # Referenzed games with their button because the url containts "-"'s
 GAMES = {
