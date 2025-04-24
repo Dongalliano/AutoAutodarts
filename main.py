@@ -1,8 +1,9 @@
 from json import dump, dumps, load, loads
-from os import getenv, makedirs, path, popen
+from os import getenv, makedirs, path, popen, execl
 from platform import system
 from socket import gethostbyname, gethostname
 from sys import exit as sys_exit
+from sys import executable, argv
 from threading import Thread
 from time import time as get_current_timestamp
 
@@ -65,17 +66,18 @@ email = ""
 password = ""
 key = ""
 
+
 def update(repo_path: str) -> bool:
     cmd_run(["git", "fetch"], cwd=repo_path, check=True)
-    
+
     result = cmd_run(
-        ["git", "status", "-uno"],
-        cwd=repo_path,
-        capture_output=True,
-        text=True
+        ["git", "status", "-uno"], cwd=repo_path, capture_output=True, text=True
     )
     if "Your branch is behind" in result.stdout:
         cmd_run(["git", "pull"], cwd=repo_path, check=True)
+        python = executable
+        execl(python, python, *argv)
+
 
 def get_html_element(
     driver, reference, timeout=5, by=By.XPATH, multiple_elements=False
@@ -306,7 +308,7 @@ def run_flask():
 
 
 if __name__ == "__main__":
-    
+
     update(path.dirname(path.abspath(__file__)))
 
     makedirs(DATA_PATH, exist_ok=True)
