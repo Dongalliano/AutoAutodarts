@@ -1,5 +1,5 @@
 from json import dump, dumps, load, loads
-from os import getenv, makedirs, path
+from os import getenv, makedirs, path, popen
 from platform import system
 from socket import gethostbyname, gethostname
 from sys import exit as sys_exit
@@ -14,20 +14,21 @@ from pyautogui import press
 from qrcode import QRCode, constants
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
 
 FLASK_APP = Flask(__name__, static_folder="./templates")
 CORS(FLASK_APP)
 
 system_os = system()
 
+local_ip = popen("hostname -I").read().strip().split()[0]
+
 if system_os == "Windows":
     DATA_PATH = path.join(getenv("TEMP"), "autoautodarts")
     KEY_PATH = path.join(getenv("APPDATA"), "D4RT2")
 elif system_os == "Linux":
-    DATA_PATH = path.join(getenv("XDG_RUNTIME_DIR", "/tmp"), "autoautodarts")
-    KEY_PATH = path.join(
-        getenv("XDG_CONFIG_HOME", path.expanduser("~/.config")), "D4RT2"
-    )
+    DATA_PATH = "/home/tom/Desktop/AutoAutodarts/autoautodarts"
+    KEY_PATH = "/home/tom/Desktop/AutoAutodarts/D4RT2"
 else:
     sys_exit()
 
@@ -59,7 +60,7 @@ key = ""
 
 
 def get_html_element(
-    driver, reference, timeout=2, by=By.XPATH, multiple_elements=False
+    driver, reference, timeout=20, by=By.XPATH, multiple_elements=False
 ):
     start_time = get_current_timestamp()
     while True:
@@ -99,8 +100,8 @@ def login(driver) -> int:
 
     if email_input == 1 or password_input == 1 or login_button == 1:
         login_status = 1
-    elif get_html_element(driver, "/html/body/div[1]/div/div[2]", 3) == 1:
-        login_status = 2
+    #elif get_html_element(driver, "/html/body/div[1]/div/div[2]", 3) == 1:
+        #login_status = 2
 
     return login_status
 
@@ -125,6 +126,7 @@ def manage_games(cmd):
         selected_game = cmd[1]
         game_name = cmd[2]
         settings = cmd[3:]
+        print(action, selected_game, game_name, settings)
     except:
         # If you are removing an preset @game_name is actually @selected_game
         if not action and not selected_game:
@@ -152,7 +154,7 @@ def manage_games(cmd):
 @FLASK_APP.route("/")
 def index():
     close()
-    return render_template("games.html", address=gethostbyname(gethostname()))
+    return render_template("games.html", address=local_ip)
 
 
 @FLASK_APP.route("/getgames")
@@ -239,14 +241,14 @@ def startgame(player_count):
     get_html_element(
         driver,
         "/html/body/div[1]/div/div[2]/div/div[2]/div[2]/div[2]/div[3]/button[1]",
-        0.4,
+        
     ).click()
 
     # Switch view to be able to see the board and hits
     get_html_element(
         driver,
         "/html/body/div[1]/div/div[2]/div/div/div[1]/ul/div[3]/div[2]/button[2]",
-        4,
+        
     ).click()
 
     return Response(status=200)
@@ -256,14 +258,14 @@ def startgame(player_count):
 def nextgame():
     get_html_element(
         driver,
-        "/html/body/div[1]/div/div[2]/div/div/div[5]/div/div/div[2]/button[3]",
-        0.4,
+        "/html/body/div[1]/div/div[2]/div/div/div[5]/div/div[1]/button[3]",
+        
     ).click()
     return Response(status=200)
 
 
 def run_flask():
-    FLASK_APP.run(host="0.0.0.0", port=8080)
+    FLASK_APP.run(host="0.0.0.0", port=5000)
     sys_exit()
 
 
@@ -298,10 +300,10 @@ if __name__ == "__main__":
 
     with open(f"{DATA_PATH}/{GAMES_FILE}", "r") as games_file:
         games = load(games_file)
+    
+    service = Service("/usr/bin/chromedriver")
 
-    driver = webdriver.Chrome()
-
-    driver.minimize_window()
+    driver = webdriver.Chrome(service=service)
 
     login_status = login(driver)
 
@@ -311,8 +313,6 @@ if __name__ == "__main__":
         login_status = login(driver)
 
     driver.maximize_window()
-
-    press("f11")
 
     flask_thread = Thread(target=run_flask)
     flask_thread.daemon = True
@@ -324,8 +324,10 @@ if __name__ == "__main__":
         box_size=10,
         border=4,
     )
+    
+    
 
-    remote_controll.add_data(f"http://{gethostbyname(gethostname())}:8080")
+    remote_controll.add_data(f"http://{local_ip}:5000")
     remote_controll.make(fit=True)
 
     qrcode_image = remote_controll.make_image(fill="black", back_color="white")

@@ -1,21 +1,21 @@
-window.onload = function () {
+
   const button_container = document.getElementById("button-container");
 
   var xhr = new XMLHttpRequest();
 
   function startGame() {
     let player_count = prompt("How many players are playing?");
-    fetch(`http://${host_url}:8080/startgame/${player_count}`);
+    fetch(`http://${host_url}:5000/startgame/${player_count}`);
   }
 
   function nextGame() {
-    fetch(`http://${host_url}:8080/nextgame`);
+    fetch(`http://${host_url}:5000/nextgame`);
   }
 
   function sendCommand() {
     var inputField = document.getElementById("inputField");
 
-    fetch(`http://${host_url}:8080/command/${inputField.value}`);
+    fetch(`http://${host_url}:5000/command/${inputField.value}`);
 
     inputField.value = "";
     loadPresets();
@@ -23,7 +23,7 @@ window.onload = function () {
 
   function loadPresets() {
     button_container.innerHTML = "";
-    fetch(`http://${host_url}:8080/getgames`)
+    fetch(`http://${host_url}:5000/getgames`)
       .then((response) => response.json())
       .then((data) => {
         for (game_mode in data) {
@@ -36,7 +36,7 @@ window.onload = function () {
             const GAME = game;
 
             button.addEventListener("click", function () {
-              fetch(`http://${host_url}:8080/loadgame/${GAME_MODE}/${GAME}`);
+              fetch(`http://${host_url}:5000/loadgame/${GAME_MODE}/${GAME}`);
             });
 
             button_container.appendChild(button);
@@ -45,4 +45,4 @@ window.onload = function () {
       });
   }
   loadPresets();
-};
+
