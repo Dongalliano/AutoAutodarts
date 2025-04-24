@@ -5,13 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Autodarts Kontrollfläche</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/games.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/games.css') }}"
+    />
 
     <script>
       var host_url = "{{ address }}";
     </script>
 
-    <script src="{{ url_for('static', filename='src/games.js') }}" defer></script>
+    <script
+      src="{{ url_for('static', filename='src/games.js') }}"
+      defer
+    ></script>
   </head>
   <body>
     <div class="grid-container">
@@ -23,6 +29,7 @@
 
       <button onclick="startGame()" class="grid-button">Start Game</button>
       <button onclick="nextGame()" class="grid-button">Next Game</button>
+      <button onclick="resetBoard()" class="grid-button">Reset Board</button>
     </div>
 
     <div class="grid-container" id="button-container"></div>
