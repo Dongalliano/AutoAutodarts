@@ -1,9 +1,10 @@
 from json import dump, dumps, load, loads
-from os import getenv, makedirs, path, popen, execl
+from os import execl, getenv, makedirs, path, popen
 from platform import system
 from socket import gethostbyname, gethostname
+from subprocess import run as cmd_run
+from sys import argv, executable
 from sys import exit as sys_exit
-from sys import executable, argv
 from threading import Thread
 from time import time as get_current_timestamp
 
@@ -13,9 +14,9 @@ from flask_cors import CORS
 from matplotlib.pyplot import axis, close, imshow, show, title
 from qrcode import QRCode, constants
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from subprocess import run as cmd_run
 
 SYSTEM_WINDOWS = "Windows"
 SYSTEM_LINUX = "Linux"
@@ -49,17 +50,17 @@ AUTODARTS_LOGIN_SITE = "https://login.autodarts.io/"
 
 # Referenzed games with their button because the url containts "-"'s
 GAMES = {
-    "x01": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[1]/div/div/a",
-    "cricket": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[1]/div/a",
-    "bermuda": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[2]/div/a[1]",
-    "shanghai": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[2]/div/a[2]",
-    "gotcha": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[2]/div/a[3]",
-    "around": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[1]",
-    "round": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[2]",
-    "random": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[3]",
-    "count": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[4]",
-    "segment": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[5]",
-    "bobs": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[6]",
+    "x01": "https://play.autodarts.io/lobbies/new/x01",
+    "cricket": "https://play.autodarts.io/lobbies/new/cricket",
+    "bermuda": "https://play.autodarts.io/lobbies/new/bermuda",
+    "shanghai": "https://play.autodarts.io/lobbies/new/shanghai",
+    "gotcha": "https://play.autodarts.io/lobbies/new/gotcha",
+    "around": "https://play.autodarts.io/lobbies/new/atc",
+    "round": "https://play.autodarts.io/lobbies/new/rtw",
+    "random": "https://play.autodarts.io/lobbies/new/random-checkout",
+    "count": "https://play.autodarts.io/lobbies/new/count-up",
+    "segment": "https://play.autodarts.io/lobbies/new/segment-training",
+    "bobs": "https://play.autodarts.io/lobbies/new/bobs27",
 }
 
 email = ""
@@ -185,13 +186,10 @@ def command(command):
 
 @FLASK_APP.route("/loadgame/<game_mode>/<game_name>")
 def loadgame(game_mode, game_name):
-    driver.get(AUTODARTS_SITE)
-
-    game_button = get_html_element(driver, GAMES[game_mode])
-    game_button.click()
+    driver.get(GAMES[game_mode])
 
     game_settings = get_html_element(
-        driver, "/html/body/div[1]/div/div[2]/div/div/div[2]/div", 5
+        driver, "/html/body/div[1]/div/div[2]/div/div/div[2]/div"
     )
 
     settings_container = game_settings.find_elements(By.XPATH, "./*")
@@ -277,15 +275,7 @@ def startgame(player_count):
 def nextgame():
     get_html_element(
         driver,
-        "/html/body/div[1]/div/div[2]/div/div/div[5]/div/div/div[2]/button[3]",
-        0.3,
-    ).click()
-    get_html_element(
-        driver, "/html/body/div[1]/div/div[2]/div/div/div[5]/div/div[1]/button[3]", 0.3
-    ).click()
-    get_html_element(
-        driver,
-        "/html/body/div[1]/div/div[2]/div/div/div[4]/div[2]/div/div/div/div[7]/button[3]",
+        "//button[text()='Next Leg']",
         0.3,
     ).click()
 
@@ -296,7 +286,7 @@ def nextgame():
 def resetboard():
     get_html_element(
         driver,
-        "/html/body/div[1]/div/div[2]/div/div/div[1]/ul/div[3]/div[3]/button[2]",
+        "//button[text()='Reset']",
         0.3,
     ).click()
     return Response(status=200)
@@ -341,12 +331,16 @@ if __name__ == "__main__":
     with open(f"{DATA_PATH}/{GAMES_FILE}", "r") as games_file:
         games = load(games_file)
 
+    driver_options = Options()
+
+    driver_options.add_argument("--lang=en")
+
     if system_os == SYSTEM_WINDOWS:
-        driver = webdriver.Chrome()
+        driver = webdriver.Chrome(driver_options)
     else:
         service = Service("/usr/bin/chromedriver")
 
-        driver = webdriver.Chrome(service=service)
+        driver = webdriver.Chrome(driver_options, service)
 
     login_status = login(driver)
 
