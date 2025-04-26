@@ -1,7 +1,9 @@
 from json import dump, dumps, load, loads
-from os import getenv, makedirs, path
+from os import execl, getenv, makedirs, path, popen
 from platform import system
 from socket import gethostbyname, gethostname
+from subprocess import run as cmd_run
+from sys import argv, executable
 from sys import exit as sys_exit
 from threading import Thread
 from time import time as get_current_timestamp
@@ -10,24 +12,32 @@ from cryptography.fernet import Fernet
 from flask import Flask, Response, render_template
 from flask_cors import CORS
 from matplotlib.pyplot import axis, close, imshow, show, title
-from pyautogui import press
 from qrcode import QRCode, constants
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+
+SYSTEM_WINDOWS = "Windows"
+SYSTEM_LINUX = "Linux"
 
 FLASK_APP = Flask(__name__, static_folder="./templates")
 CORS(FLASK_APP)
 
 system_os = system()
 
-if system_os == "Windows":
+local_ip: str
+
+if system_os == SYSTEM_WINDOWS:
     DATA_PATH = path.join(getenv("TEMP"), "autoautodarts")
     KEY_PATH = path.join(getenv("APPDATA"), "D4RT2")
-elif system_os == "Linux":
-    DATA_PATH = path.join(getenv("XDG_RUNTIME_DIR", "/tmp"), "autoautodarts")
-    KEY_PATH = path.join(
-        getenv("XDG_CONFIG_HOME", path.expanduser("~/.config")), "D4RT2"
-    )
+
+    local_ip = gethostbyname(gethostname())
+elif system_os == SYSTEM_LINUX:
+    DATA_PATH = "/home/tom/Desktop/AutoAutodarts/autoautodarts"
+    KEY_PATH = "/home/tom/Desktop/AutoAutodarts/D4RT2"
+
+    local_ip = popen("hostname -I").read().strip().split()[0]
 else:
     sys_exit()
 
@@ -40,17 +50,17 @@ AUTODARTS_LOGIN_SITE = "https://login.autodarts.io/"
 
 # Referenzed games with their button because the url containts "-"'s
 GAMES = {
-    "x01": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[1]/div/div/a",
-    "cricket": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[1]/div/a",
-    "bermuda": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[2]/div/a[1]",
-    "shanghai": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[2]/div/a[2]",
-    "gotcha": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[2]/div/a[3]",
-    "around": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[1]",
-    "round": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[2]",
-    "random": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[3]",
-    "count": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[4]",
-    "segment": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[5]",
-    "bobs": "/html/body/div[1]/div/div[2]/div/div/div[2]/div[3]/div/a[6]",
+    "x01": "https://play.autodarts.io/lobbies/new/x01",
+    "cricket": "https://play.autodarts.io/lobbies/new/cricket",
+    "bermuda": "https://play.autodarts.io/lobbies/new/bermuda",
+    "shanghai": "https://play.autodarts.io/lobbies/new/shanghai",
+    "gotcha": "https://play.autodarts.io/lobbies/new/gotcha",
+    "around": "https://play.autodarts.io/lobbies/new/atc",
+    "round": "https://play.autodarts.io/lobbies/new/rtw",
+    "random": "https://play.autodarts.io/lobbies/new/random-checkout",
+    "count": "https://play.autodarts.io/lobbies/new/count-up",
+    "segment": "https://play.autodarts.io/lobbies/new/segment-training",
+    "bobs": "https://play.autodarts.io/lobbies/new/bobs27",
 }
 
 email = ""
@@ -58,8 +68,20 @@ password = ""
 key = ""
 
 
+def update(repo_path: str) -> bool:
+    cmd_run(["git", "fetch"], cwd=repo_path, check=True)
+
+    result = cmd_run(
+        ["git", "status", "-uno"], cwd=repo_path, capture_output=True, text=True
+    )
+    if "Your branch is behind" in result.stdout:
+        cmd_run(["git", "pull"], cwd=repo_path, check=True)
+        python = executable
+        execl(python, python, *argv)
+
+
 def get_html_element(
-    driver, reference, timeout=2, by=By.XPATH, multiple_elements=False
+    driver, reference, timeout=5, by=By.XPATH, multiple_elements=False
 ):
     start_time = get_current_timestamp()
     while True:
@@ -83,19 +105,14 @@ def login(driver) -> int:
 
     driver.get(AUTODARTS_SITE)
 
-    email_input = get_html_element(
-        driver, "/html/body/div[1]/div[2]/div/div/div[1]/div/form/div[1]/input", 5
-    )
-    password_input = get_html_element(
-        driver, "/html/body/div[1]/div[2]/div/div/div[1]/div/form/div[2]/div/input"
-    )
+    email_input = get_html_element(driver, "username", 5, By.ID)
+
+    password_input = get_html_element(driver, "password", by=By.ID)
 
     email_input.send_keys(email)
     password_input.send_keys(password)
 
-    login_button = get_html_element(
-        driver, "/html/body/div[1]/div[2]/div/div/div[1]/div/form/div[4]/input[2]"
-    ).click()
+    login_button = get_html_element(driver, "kc-login", by=By.ID).click()
 
     if email_input == 1 or password_input == 1 or login_button == 1:
         login_status = 1
@@ -125,6 +142,7 @@ def manage_games(cmd):
         selected_game = cmd[1]
         game_name = cmd[2]
         settings = cmd[3:]
+        print(action, selected_game, game_name, settings)
     except:
         # If you are removing an preset @game_name is actually @selected_game
         if not action and not selected_game:
@@ -152,7 +170,7 @@ def manage_games(cmd):
 @FLASK_APP.route("/")
 def index():
     close()
-    return render_template("games.html", address=gethostbyname(gethostname()))
+    return render_template("games.html", address=local_ip)
 
 
 @FLASK_APP.route("/getgames")
@@ -168,10 +186,7 @@ def command(command):
 
 @FLASK_APP.route("/loadgame/<game_mode>/<game_name>")
 def loadgame(game_mode, game_name):
-    driver.get(AUTODARTS_SITE)
-
-    game_button = get_html_element(driver, GAMES[game_mode])
-    game_button.click()
+    driver.get(GAMES[game_mode])
 
     game_settings = get_html_element(
         driver, "/html/body/div[1]/div/div[2]/div/div/div[2]/div"
@@ -226,6 +241,7 @@ def startgame(player_count):
         player_name_input = get_html_element(
             driver,
             "/html/body/div[1]/div/div[2]/div/div[2]/div[2]/div[2]/div[2]/div/input",
+            5,
         )
         add_player_button = get_html_element(
             driver,
@@ -237,16 +253,19 @@ def startgame(player_count):
 
     # Click start button
     get_html_element(
-        driver,
-        "/html/body/div[1]/div/div[2]/div/div[2]/div[2]/div[2]/div[3]/button[1]",
-        0.4,
+        driver, "/html/body/div[1]/div/div[2]/div/div[2]/div[2]/div[2]/div[3]/button[1]"
     ).click()
 
     # Switch view to be able to see the board and hits
     get_html_element(
         driver,
         "/html/body/div[1]/div/div[2]/div/div/div[1]/ul/div[3]/div[2]/button[2]",
-        4,
+        5,
+    ).click()
+    get_html_element(
+        driver,
+        "/html/body/div[1]/div/div[2]/div/div/div[1]/ul/div[3]/div[1]/button[2]",
+        0.2,
     ).click()
 
     return Response(status=200)
@@ -256,18 +275,31 @@ def startgame(player_count):
 def nextgame():
     get_html_element(
         driver,
-        "/html/body/div[1]/div/div[2]/div/div/div[5]/div/div/div[2]/button[3]",
-        0.4,
+        "//button[text()='Next Leg']",
+        0.3,
+    ).click()
+
+    return Response(status=200)
+
+
+@FLASK_APP.route("/resetboard")
+def resetboard():
+    get_html_element(
+        driver,
+        "//button[text()='Reset']",
+        0.3,
     ).click()
     return Response(status=200)
 
 
 def run_flask():
-    FLASK_APP.run(host="0.0.0.0", port=8080)
+    FLASK_APP.run(host="0.0.0.0", port=5000)
     sys_exit()
 
 
 if __name__ == "__main__":
+
+    update(path.dirname(path.abspath(__file__)))
 
     makedirs(DATA_PATH, exist_ok=True)
     makedirs(KEY_PATH, exist_ok=True)
@@ -299,9 +331,16 @@ if __name__ == "__main__":
     with open(f"{DATA_PATH}/{GAMES_FILE}", "r") as games_file:
         games = load(games_file)
 
-    driver = webdriver.Chrome()
+    driver_options = Options()
 
-    driver.minimize_window()
+    driver_options.add_argument("--lang=en")
+
+    if system_os == SYSTEM_WINDOWS:
+        driver = webdriver.Chrome(driver_options)
+    else:
+        service = Service("/usr/bin/chromedriver")
+
+        driver = webdriver.Chrome(driver_options, service)
 
     login_status = login(driver)
 
@@ -311,8 +350,6 @@ if __name__ == "__main__":
         login_status = login(driver)
 
     driver.maximize_window()
-
-    press("f11")
 
     flask_thread = Thread(target=run_flask)
     flask_thread.daemon = True
@@ -325,7 +362,7 @@ if __name__ == "__main__":
         border=4,
     )
 
-    remote_controll.add_data(f"http://{gethostbyname(gethostname())}:8080")
+    remote_controll.add_data(f"http://{local_ip}:5000")
     remote_controll.make(fit=True)
 
     qrcode_image = remote_controll.make_image(fill="black", back_color="white")
